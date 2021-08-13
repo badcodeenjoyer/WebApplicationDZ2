@@ -22,8 +22,14 @@ namespace WebApplicationDZ2
     public class Startup
     {
 
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
-        
+        public IConfiguration Configuration { get; }
+
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ICheck, CheckService>();
@@ -31,13 +37,37 @@ namespace WebApplicationDZ2
             services.AddTransient<ILogic, LogicService>();
             services.AddTransient<IPublish, PublishService>();
             services.AddScoped<ISave, SaveInfService>();
-
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplicationDZ2", Version = "v1" });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
 
+           
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApplicationDZ2 v1"));
+            }
+
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
             app.UseMiddleware();
             app.UseMiddleware1();
             app.UseMiddleware2();
@@ -48,10 +78,10 @@ namespace WebApplicationDZ2
 
             app.Run(async (context) =>
             {
-                
-            app.Map("/publish", async (appBuilder) =>
-            {
-                
+
+                app.Map("/publish", async (appBuilder) =>
+                {
+
                     app.Use(async (context, next) =>
                     {
                         Console.WriteLine("1");
@@ -68,10 +98,10 @@ namespace WebApplicationDZ2
 
 
                     });
-    
-                 });
 
-            }); 
+                });
+
+            });
 
         }
        
